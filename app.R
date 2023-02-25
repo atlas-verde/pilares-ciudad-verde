@@ -1,5 +1,5 @@
 #
-# Ecosystem services dashboard
+# Dashboard for Pillars of Ciudad Verde
 #
 
 
@@ -23,10 +23,9 @@ INDICATOR_GREENAREA <- "Superficie verde por habitante"
 INDICATOR_TRAILSLONGITUDE <- "Longitud de senderos para caminar per cápita"
 INDICATOR_OPENSPACES <- "Número de espacios públicos para recreación"
 
-# Data sources
-DSN_CANTONS <- "data/metricas_ejemplo_tablero_080223.geojson"
+INDICATOR_CULTIVATEDLAND <- "Superficie de tierra cultivada"
 
-# Classes
+# Classes for simbology in maps
 QUANTILES_GREENAREA_VALUES <- c(17, 99, 264, 563, 1393)
 QUANTILES_GREENAREA_LABELS <- c("17 - 99", "100 - 264", "265 - 563", "564 - 1393")
 
@@ -36,36 +35,60 @@ QUANTILES_TRAILSLONGITUDE_LABELS <- c("0.00000 - 0.04350", "0.04351 - 0.12400", 
 QUANTILES_OPENSPACES_VALUES <- c(5, 12, 21, 38, 156)
 QUANTILES_OPENSPACES_LABELS <- c("5 - 12", "13 - 21", "22 - 38", "39 - 156")
 
+QUANTILES_CULTIVATEDLAND_VALUES <- c(3, 168, 686, 1975, 6975)
+QUANTILES_CULTIVATEDLAND_LABELS <- c("3 - 168", "169 - 686", "687 - 1975", "1976 - 6975")
+
 # Color palettes
-PALETTE_GREENAREA_START_COLOR <- "#90ee90"
-PALETTE_GREENAREA_END_COLOR <- "#013220"
+PALETTE_GREENAREA_START_COLOR <- "#90ee90" # light green
+PALETTE_GREENAREA_END_COLOR <- "#013220" # dark green
 PALETTE_GREENAREA <- colorBin(
   bins = QUANTILES_GREENAREA_VALUES, 
   palette = c(PALETTE_GREENAREA_START_COLOR, PALETTE_GREENAREA_END_COLOR),
   na.color = NA
 )
 
-PALETTE_TRAILSLONGITUDE_START_COLOR <- "#b5651d"
-PALETTE_TRAILSLONGITUDE_END_COLOR <- "#654321"
+PALETTE_TRAILSLONGITUDE_START_COLOR <- "#b5651d" # light brown
+PALETTE_TRAILSLONGITUDE_END_COLOR <- "#654321" # dark brown
 PALETTE_TRAILSLONGITUDE <- colorBin(
   bins = QUANTILES_TRAILSLONGITUDE_VALUES, 
   palette = c(PALETTE_TRAILSLONGITUDE_START_COLOR, PALETTE_TRAILSLONGITUDE_END_COLOR),
   na.color = NA
 )
 
-PALETTE_OPENSPACES_START_COLOR <- "#add8e6"
-PALETTE_OPENSPACES_END_COLOR <- "#00008b"
+PALETTE_OPENSPACES_START_COLOR <- "#add8e6" # light blue
+PALETTE_OPENSPACES_END_COLOR <- "#00008b" # dark blue
 PALETTE_OPENSPACES <- colorBin(
   bins = QUANTILES_OPENSPACES_VALUES, 
   palette = c(PALETTE_OPENSPACES_START_COLOR, PALETTE_OPENSPACES_END_COLOR),
   na.color = NA
 )
 
+PALETTE_CULTIVATEDLAND_START_COLOR <- "#b5651d" # light brown
+PALETTE_CULTIVATEDLAND_END_COLOR <- "#654321" # dark brown
+PALETTE_CULTIVATEDLAND <- colorBin(
+  bins = QUANTILES_CULTIVATEDLAND_VALUES, 
+  palette = c(PALETTE_CULTIVATEDLAND_START_COLOR, PALETTE_CULTIVATEDLAND_END_COLOR),
+  na.color = NA
+)
+
+
+# DATA SOURCES
+DSN_CANTONS <- "data/metricas_ejemplo_tablero_080223.geojson"
+
 
 # DATASETS
 
 # Cantons and their indicators of ecosystem services
 cantons <- st_read(dsn = DSN_CANTONS, quiet = TRUE)
+
+# Data columns
+COLUMN_CANTON_NAME <- cantons$canton
+
+COLUMN_GREENAREA <- cantons$supverd.ha
+COLUMN_TRAILSLONGITUDE <- cantons$km_sendero
+COLUMN_OPENSPACES <- cantons$numeros_es
+
+COLUMN_CULTIVATEDLAND <- cantons$tierrasc_h
 
 
 # USER INTERFACE
@@ -75,14 +98,21 @@ ui <-
       tags$style(
         HTML(
           "/* Radio buttons size */
-          #radiobuttons_indicator label {
+          #radiobuttons_indicators_recreation label {
+            font-size: 18px;
+          }
+          #radiobuttons_indicators_food label {
             font-size: 18px;
           }"
         )
       )
     ),    
     navbarPage("Pilares Ciudad Verde", theme = shinytheme("lumen"),
-      navbarMenu("Salud y bienestar", icon = icon("chart-bar"),
+               
+      # Pilar Ciudad verde: Salud y bienestar
+      navbarMenu("Salud y bienestar", icon = icon("globe-americas"),
+                 
+        # Dimensión: Recreación - Servicio ecosistémico: Cultural
         tabPanel("Recreación", fluid = TRUE, icon = icon("globe-americas"),
           sidebarLayout(
             sidebarPanel(
@@ -92,7 +122,7 @@ ui <-
               fluidRow(h3(strong("Servicio ecosistémico"), br(), "Cultural")),
               fluidRow(h3(strong("Indicadores"))),
               fluidRow(
-                radioButtons("radiobuttons_indicator",
+                radioButtons("radiobuttons_indicators_recreation",
                   label = "",
                   choices = c(
                     INDICATOR_GREENAREA,
@@ -109,6 +139,31 @@ ui <-
               fluidRow(withSpinner(plotlyOutput("barplot_recreation")))
             )
           )
+        ),
+        
+        # Dimensiónn: Alimento para la población - Servicio ecosistémico: Aprovisionamiento
+        tabPanel("Alimento para la población", fluid = TRUE, icon = icon("globe-americas"),
+          sidebarPanel(
+            fluidRow(h1(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
+            fluidRow(h2(strong("Dimensión"), br(), "Alimento para la población")),
+            fluidRow(h3(strong("Meta aspiracional"), br(), em("La ciudad ofrece alimentos frescos, orgánicos de producción sostenible y local a la población."))),
+            fluidRow(h3(strong("Servicio ecosistémico"), br(), "Aprovisionamiento")),  
+            fluidRow(h3(strong("Indicadores"))),
+            fluidRow(
+              radioButtons("radiobuttons_indicators_food",
+                label = "",
+                choices = c(
+                  INDICATOR_CULTIVATEDLAND
+                ),
+                selected = INDICATOR_CULTIVATEDLAND
+              )
+            )            
+          ),
+          mainPanel(
+            fluidRow(h3(strong(textOutput("header_food")))),
+            fluidRow(withSpinner(leafletOutput("map_food"))),
+            fluidRow(withSpinner(plotlyOutput("barplot_food")))
+          )
         )
       )
     )
@@ -117,48 +172,44 @@ ui <-
 
 # SERVER LOGIC
 server <- function(input, output) {
-  # Reactive function for data fitering
-  filter_cantons <- reactive({
-    filtered_cantons <- cantons
-    
-    filtered_cantons <-
-      filtered_cantons |>
-      filter(supverd.ha >= input$slider_greenarea[1] & supverd.ha <= input$slider_greenarea[2]) |>
-      filter(km_sendero >= input$slider_trailslongitude[1] & km_sendero <= input$slider_trailslongitude[2])      
-    
-    return(filtered_cantons)
-  })  
-  
-  # Header
+  # Recreation indicators header
   output$header_recreation <- renderText(
-    if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+    if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
       INDICATOR_GREENAREA
-    } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+    } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
       INDICATOR_TRAILSLONGITUDE
-    } else {
+    } else if (input$radiobuttons_indicators_recreation == INDICATOR_OPENSPACES) {
       INDICATOR_OPENSPACES
-    }   
+    }
   )
   
-  # Recreation indicator map
+  # Food indicators header
+  output$header_food <- renderText(
+    if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+      INDICATOR_CULTIVATEDLAND
+    }
+  )  
+  
+  
+  # Recreation indicators map
   output$map_recreation <- renderLeaflet({
     # cantons <- filter_cantons()
     
     # Column with value of indicator in dataframe
     indicator_column <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
-        cantons$supverd.ha
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
-        cantons$km_sendero
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
+        COLUMN_GREENAREA
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
+        COLUMN_TRAILSLONGITUDE
       } else {
-        cantons$numeros_es
+        COLUMN_OPENSPACES
       }
     
     # Group in map
     indicator_group <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         INDICATOR_GREENAREA
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         INDICATOR_TRAILSLONGITUDE
       } else {
         INDICATOR_OPENSPACES
@@ -166,9 +217,9 @@ server <- function(input, output) {
     
     # Title in map legend
     indicator_legend_title <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         INDICATOR_GREENAREA
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         INDICATOR_TRAILSLONGITUDE
       } else {
         INDICATOR_OPENSPACES
@@ -176,9 +227,9 @@ server <- function(input, output) {
     
     # Labels in map legend
     indicator_legend_labels <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         QUANTILES_GREENAREA_LABELS
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         QUANTILES_TRAILSLONGITUDE_LABELS
       } else {
         QUANTILES_OPENSPACES_LABELS
@@ -186,7 +237,7 @@ server <- function(input, output) {
     
     # Units of measurement of the indicator (NOT IN USE)
     indicator_unit <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         "m2"
       } else {
         "km"
@@ -194,9 +245,9 @@ server <- function(input, output) {
     
     # Fill color of the map
     indicator_fillColor <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         ~ PALETTE_GREENAREA(supverd.ha)
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         ~ PALETTE_TRAILSLONGITUDE(km_sendero)
       } else {
         ~ PALETTE_OPENSPACES(numeros_es)
@@ -204,9 +255,9 @@ server <- function(input, output) {
     
     # Color palette
     indicator_palette <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         PALETTE_GREENAREA
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         PALETTE_TRAILSLONGITUDE
       } else {
         PALETTE_OPENSPACES
@@ -225,7 +276,7 @@ server <- function(input, output) {
         fillColor = indicator_fillColor,
         weight = 1,
         popup = paste(
-          paste("<strong>Cantón:</strong>",  cantons$canton),
+          paste("<strong>Cantón:</strong>",  COLUMN_CANTON_NAME),
           paste(
             paste0("<strong>", indicator_group, ":</strong>"), 
             indicator_column
@@ -233,7 +284,7 @@ server <- function(input, output) {
           sep = '<br/>'
         ),
         label = paste(
-          paste("Cantón:",  cantons$canton),
+          paste("Cantón:",  COLUMN_CANTON_NAME),
           paste(paste0(indicator_group, ":"), indicator_column),
           sep = ' - '
         ),
@@ -269,15 +320,119 @@ server <- function(input, output) {
       addFullscreenControl()
   })
   
+  # Food indicators map
+  output$map_food <- renderLeaflet({
+    # cantons <- filter_cantons()
+    
+    # Column with value of indicator in dataframe
+    indicator_column <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        COLUMN_CULTIVATEDLAND
+      }
+    
+    # Group in map
+    indicator_group <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        INDICATOR_CULTIVATEDLAND
+      }
+    
+    # Title in map legend
+    indicator_legend_title <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        INDICATOR_CULTIVATEDLAND
+      }
+    
+    # Labels in map legend
+    indicator_legend_labels <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        QUANTILES_CULTIVATEDLAND_LABELS
+      }     
+    
+    # Units of measurement of the indicator (NOT IN USE)
+    indicator_unit <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        "ha"
+      }
+    
+    # Fill color of the map
+    indicator_fillColor <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        ~ PALETTE_CULTIVATEDLAND(tierrasc_h)
+      }
+    
+    # Color palette
+    indicator_palette <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        PALETTE_CULTIVATEDLAND
+      }
+    
+    # Map
+    leaflet() |>
+      addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") |>
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "CartoDB Dark Matter") |>
+      addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") |>   
+      addProviderTiles(providers$Esri.WorldImagery, group = "ESRI World Imagery") |>
+      addPolygons(data = cantons,
+        fillOpacity = ifelse(is.na(indicator_column), 0, 0.7),
+        stroke = TRUE,
+        color = "Black",
+        fillColor = indicator_fillColor,
+        weight = 1,
+        popup = paste(
+          paste("<strong>Cantón:</strong>",  COLUMN_CANTON_NAME),
+          paste(
+            paste0("<strong>", indicator_group, ":</strong>"), 
+            indicator_column
+          ),
+          sep = '<br/>'
+        ),
+        label = paste(
+          paste("Cantón:",  COLUMN_CANTON_NAME),
+          paste(paste0(indicator_group, ":"), indicator_column),
+          sep = ' - '
+        ),
+        group = indicator_group
+      ) |>
+      addLegend(
+        position = "bottomright",
+        pal = indicator_palette,
+        values = indicator_column,
+        labFormat = function(type, cuts, p) {
+          paste0(indicator_legend_labels)
+        },
+        group = indicator_group,
+        title = indicator_legend_title
+      ) |>
+      addLayersControl(
+        baseGroups = c(
+          "OpenStreetMap",
+          "CartoDB Dark Matter",
+          "Stamen Toner Lite",
+          "ESRI World Imagery"
+        ),
+        overlayGroups = c(indicator_group),
+        options = layersControlOptions(collapsed = FALSE)
+      ) |>
+      addScaleBar(
+        position = "bottomleft",
+        options = scaleBarOptions(imperial = FALSE)
+      ) |>
+      addMouseCoordinates() |>
+      addSearchOSM() |>
+      addResetMapButton() |>
+      addFullscreenControl()
+  })
+  
+  
   # Recreation indicator bar plot
   output$barplot_recreation <- renderPlotly({
     # cantons <- filter_cantons()
     
     # Column with value of indicator in dataframe
     indicator_column <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         cantons$supverd.ha
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         cantons$km_sendero
       } else {
         cantons$numeros_es
@@ -285,9 +440,9 @@ server <- function(input, output) {
     
     # Label for bars
     indicator_geom_col_label <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         INDICATOR_GREENAREA
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         INDICATOR_TRAILSLONGITUDE
       } else {
         INDICATOR_OPENSPACES
@@ -295,9 +450,9 @@ server <- function(input, output) {
     
     # Y axis label
     indicator_y_axis_label <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         INDICATOR_GREENAREA
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         INDICATOR_TRAILSLONGITUDE
       } else {
         INDICATOR_OPENSPACES
@@ -305,9 +460,9 @@ server <- function(input, output) {
     
     # Fill color of bars
     indicator_geom_col_fill <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         PALETTE_GREENAREA_END_COLOR
-      } else if (input$radiobuttons_indicator == INDICATOR_TRAILSLONGITUDE) {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         PALETTE_TRAILSLONGITUDE_END_COLOR
       } else {
         PALETTE_OPENSPACES_END_COLOR
@@ -315,7 +470,7 @@ server <- function(input, output) {
     
     # Units of measurement of the indicator (NOT IN USE)
     indicator_unit <-
-      if (input$radiobuttons_indicator == INDICATOR_GREENAREA) {
+      if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         "m2"
       } else {
         "km"
@@ -325,12 +480,12 @@ server <- function(input, output) {
     barplot_recreation_ggplot2 <-
       cantons |>
       ggplot(
-        aes(x = reorder(canton,-indicator_column), y = indicator_column)
+        aes(x = reorder(COLUMN_CANTON_NAME,-indicator_column), y = indicator_column)
       ) +
       geom_col(
         aes(
           text = paste0(
-            "Cantón: ", canton, "\n", 
+            "Cantón: ", COLUMN_CANTON_NAME, "\n", 
             indicator_geom_col_label, ": ", indicator_column
           )
         ),
@@ -348,7 +503,70 @@ server <- function(input, output) {
     barplot_recreation_ggplot2 |>
       ggplotly(tooltip = "text") |>
       config(locale = 'es')
-  })   
+  })
+  
+  # Food indicator bar plot
+  output$barplot_food <- renderPlotly({
+    # cantons <- filter_cantons()
+    
+    # Column with value of indicator in dataframe
+    indicator_column <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        COLUMN_CULTIVATEDLAND
+      }
+    
+    # Label for bars
+    indicator_geom_col_label <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        INDICATOR_CULTIVATEDLAND
+      }
+    
+    # Y axis label
+    indicator_y_axis_label <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        INDICATOR_CULTIVATEDLAND
+      }
+    
+    # Fill color of bars
+    indicator_geom_col_fill <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        PALETTE_CULTIVATEDLAND_END_COLOR
+      }  
+    
+    # Units of measurement of the indicator (NOT IN USE)
+    indicator_unit <-
+      if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
+        "ha"
+      }    
+    
+    # Ggplot2 plot
+    barplot_recreation_ggplot2 <-
+      cantons |>
+      ggplot(
+        aes(x = reorder(COLUMN_CANTON_NAME,-indicator_column), y = indicator_column)
+      ) +
+      geom_col(
+        aes(
+          text = paste0(
+            "Cantón: ", COLUMN_CANTON_NAME, "\n", 
+            indicator_geom_col_label, ": ", indicator_column
+          )
+        ),
+        fill = indicator_geom_col_fill
+      ) +
+      xlab("Cantón") +
+      ylab(indicator_y_axis_label) +
+      theme_classic() +
+      theme(
+        axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1),
+        legend.position = "none"
+      )
+    
+    # Plotly plot
+    barplot_recreation_ggplot2 |>
+      ggplotly(tooltip = "text") |>
+      config(locale = 'es')
+  })     
 }
 
 
