@@ -14,6 +14,7 @@ library(leafem)
 library(shiny)
 library(shinythemes)
 library(shinycssloaders)
+library(colorspace)
 
 
 # FUNCTIONS
@@ -46,6 +47,7 @@ COLUMN_OPENSPACES <- cantons$numeros_es
 
 COLUMN_CULTIVATEDLAND <- cantons$tierrasc_h
 COLUMN_CULTIVATEDPASTURES <- cantons$pastos_ha
+COLUMN_SHADECOFFEE <- cantons$cafe_ha
 
 
 # CONSTANTS
@@ -57,6 +59,7 @@ INDICATOR_OPENSPACES <- "Número de espacios públicos para recreación"
 
 INDICATOR_CULTIVATEDLAND <- "Superficie de tierra cultivada"
 INDICATOR_CULTIVATEDPASTURES <- "Superficie de pastos cultivados"
+INDICATOR_SHADECOFFEE <- "Superficie de café con sombra"
 
 # Classes for simbology in maps
 QUANTILES_GREENAREA_VALUES <- fivenum(COLUMN_GREENAREA)
@@ -74,45 +77,61 @@ QUANTILES_CULTIVATEDLAND_LABELS <- get_quartiles_labels(QUANTILES_CULTIVATEDLAND
 QUANTILES_CULTIVATEDPASTURES_VALUES <- fivenum(COLUMN_CULTIVATEDPASTURES)
 QUANTILES_CULTIVATEDPASTURES_LABELS <- get_quartiles_labels(QUANTILES_CULTIVATEDPASTURES_VALUES)
 
+QUANTILES_SHADECOFFEE_VALUES <- fivenum(COLUMN_SHADECOFFEE)
+QUANTILES_SHADECOFFEE_LABELS <- get_quartiles_labels(QUANTILES_SHADECOFFEE_VALUES)
+
+
 # Color palettes
-PALETTE_GREENAREA_START_COLOR <- "#90ee90" # light green
-PALETTE_GREENAREA_END_COLOR <- "#013220" # dark green
-PALETTE_GREENAREA <- colorQuantile(
+PALETTE_GREENAREA_COLOR <- rgb(175, 255, 175, maxColorValue = 255) # CORINE CR - Zonas verdes urbanas
+PALETTE_GREENAREA_START_COLOR <- lighten(PALETTE_GREENAREA_COLOR, 0.4)
+PALETTE_GREENAREA_END_COLOR <- darken(PALETTE_GREENAREA_COLOR, 0.4)
+PALETTE_GREENAREA <- colorBin(
+  bins = QUANTILES_GREENAREA_VALUES,   
   palette = c(PALETTE_GREENAREA_START_COLOR, PALETTE_GREENAREA_END_COLOR),
-  domain = COLUMN_GREENAREA,
-  n = QUANTILES_BREAKS,
   na.color = NA
 )
-
-PALETTE_TRAILSLONGITUDE_START_COLOR <- "#778899" # light slate gray
-PALETTE_TRAILSLONGITUDE_END_COLOR <- "#2f4f4f" # dark slate gray
+PALETTE_TRAILSLONGITUDE_COLOR <- rgb(248, 0, 0, maxColorValue = 255) # CORINE CR - Red vial
+PALETTE_TRAILSLONGITUDE_START_COLOR <- lighten(PALETTE_TRAILSLONGITUDE_COLOR, 0.4)
+PALETTE_TRAILSLONGITUDE_END_COLOR <- darken(PALETTE_TRAILSLONGITUDE_COLOR, 0.4)
 PALETTE_TRAILSLONGITUDE <- colorBin(
   bins = QUANTILES_TRAILSLONGITUDE_VALUES, 
   palette = c(PALETTE_TRAILSLONGITUDE_START_COLOR, PALETTE_TRAILSLONGITUDE_END_COLOR),
   na.color = NA
 )
 
-PALETTE_OPENSPACES_START_COLOR <- "#add8e6" # light blue
-PALETTE_OPENSPACES_END_COLOR <- "#00008b" # dark blue
+PALETTE_OPENSPACES_COLOR <- rgb(230, 0, 0, maxColorValue = 255) # CORINE CR - Instalaciones recreativas
+PALETTE_OPENSPACES_START_COLOR <- lighten(PALETTE_OPENSPACES_COLOR, 0.4)
+PALETTE_OPENSPACES_END_COLOR <- darken(PALETTE_OPENSPACES_COLOR, 0.4)
 PALETTE_OPENSPACES <- colorBin(
   bins = QUANTILES_OPENSPACES_VALUES, 
   palette = c(PALETTE_OPENSPACES_START_COLOR, PALETTE_OPENSPACES_END_COLOR),
   na.color = NA
 )
 
-PALETTE_CULTIVATEDLAND_START_COLOR <- "#b5651d" # light brown
-PALETTE_CULTIVATEDLAND_END_COLOR <- "#654321" # dark brown
+PALETTE_CULTIVATEDLAND_COLOR <- rgb(190, 205, 0, maxColorValue = 255) # CORINE CR - Mosaico de cultivos
+PALETTE_CULTIVATEDLAND_START_COLOR <- lighten(PALETTE_CULTIVATEDLAND_COLOR, 0.4)
+PALETTE_CULTIVATEDLAND_END_COLOR <- darken(PALETTE_CULTIVATEDLAND_COLOR, 0.4)
 PALETTE_CULTIVATEDLAND <- colorBin(
   bins = QUANTILES_CULTIVATEDLAND_VALUES, 
   palette = c(PALETTE_CULTIVATEDLAND_START_COLOR, PALETTE_CULTIVATEDLAND_END_COLOR),
   na.color = NA
 )
 
-PALETTE_CULTIVATEDPASTURES_START_COLOR <- "#7cfC00" # lawn green
-PALETTE_CULTIVATEDPASTURES_END_COLOR <- "#32cd32" # lime green
+PALETTE_CULTIVATEDPASTURES_COLOR <- rgb(255, 255, 166, maxColorValue = 255) # CORINE CR - Pastos limpios
+PALETTE_CULTIVATEDPASTURES_START_COLOR <- lighten(PALETTE_CULTIVATEDPASTURES_COLOR, 0.4)
+PALETTE_CULTIVATEDPASTURES_END_COLOR <- darken(PALETTE_CULTIVATEDPASTURES_COLOR, 0.4)
 PALETTE_CULTIVATEDPASTURES <- colorBin(
   bins = QUANTILES_CULTIVATEDPASTURES_VALUES, 
   palette = c(PALETTE_CULTIVATEDPASTURES_START_COLOR, PALETTE_CULTIVATEDPASTURES_END_COLOR),
+  na.color = NA
+)
+
+PALETTE_SHADECOFFEE_COLOR <- rgb(115, 38, 0, maxColorValue = 255) # CORINE CR - Café
+PALETTE_SHADECOFFEE_START_COLOR <- lighten(PALETTE_SHADECOFFEE_COLOR, 0.4)
+PALETTE_SHADECOFFEE_END_COLOR <- darken(PALETTE_SHADECOFFEE_COLOR, 0.4)
+PALETTE_SHADECOFFEE <- colorBin(
+  bins = QUANTILES_SHADECOFFEE_VALUES, 
+  palette = c(PALETTE_SHADECOFFEE_START_COLOR, PALETTE_SHADECOFFEE_END_COLOR),
   na.color = NA
 )
 
@@ -180,7 +199,8 @@ ui <-
                 label = "",
                 choices = c(
                   INDICATOR_CULTIVATEDLAND,
-                  INDICATOR_CULTIVATEDPASTURES
+                  INDICATOR_CULTIVATEDPASTURES,
+                  INDICATOR_SHADECOFFEE
                 ),
                 selected = INDICATOR_CULTIVATEDLAND
               )
@@ -216,6 +236,8 @@ server <- function(input, output) {
       INDICATOR_CULTIVATEDLAND
     } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
       INDICATOR_CULTIVATEDPASTURES
+    } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+      INDICATOR_SHADECOFFEE
     }
   )  
   
@@ -359,6 +381,8 @@ server <- function(input, output) {
         COLUMN_CULTIVATEDLAND
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         COLUMN_CULTIVATEDPASTURES
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        INDICATOR_SHADECOFFEE
       }
     
     # Group in map
@@ -367,6 +391,8 @@ server <- function(input, output) {
         INDICATOR_CULTIVATEDLAND
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         INDICATOR_CULTIVATEDPASTURES
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        INDICATOR_SHADECOFFEE
       }
     
     # Title in map legend
@@ -375,6 +401,8 @@ server <- function(input, output) {
         INDICATOR_CULTIVATEDLAND
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         INDICATOR_CULTIVATEDPASTURES
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        INDICATOR_SHADECOFFEE
       }
     
     # Labels in map legend
@@ -383,6 +411,8 @@ server <- function(input, output) {
         QUANTILES_CULTIVATEDLAND_LABELS
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         QUANTILES_CULTIVATEDPASTURES_LABELS
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        QUANTILES_SHADECOFFEE_LABELS
       }
     
     # Units of measurement of the indicator (NOT IN USE)
@@ -390,6 +420,8 @@ server <- function(input, output) {
       if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDLAND) {
         "ha"
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
+        "ha"
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
         "ha"
       }
     
@@ -399,6 +431,8 @@ server <- function(input, output) {
         ~ PALETTE_CULTIVATEDLAND(tierrasc_h)
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         ~ PALETTE_CULTIVATEDPASTURES(pastos_ha)
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        ~ PALETTE_SHADECOFFEE(cafe_ha)
       }
     
     # Color palette
@@ -407,6 +441,8 @@ server <- function(input, output) {
         PALETTE_CULTIVATEDLAND
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         PALETTE_CULTIVATEDPASTURES
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        PALETTE_SHADECOFFEE
       }
     
     # Map
@@ -474,11 +510,11 @@ server <- function(input, output) {
     # Column with value of indicator in dataframe
     indicator_column <-
       if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
-        cantons$supverd.ha
+        COLUMN_GREENAREA
       } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
-        cantons$km_sendero
-      } else {
-        cantons$numeros_es
+        COLUMN_TRAILSLONGITUDE
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_OPENSPACES) {
+        COLUMN_OPENSPACES
       }
     
     # Label for bars
@@ -487,7 +523,7 @@ server <- function(input, output) {
         INDICATOR_GREENAREA
       } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         INDICATOR_TRAILSLONGITUDE
-      } else {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_OPENSPACES) {
         INDICATOR_OPENSPACES
       }
     
@@ -497,7 +533,7 @@ server <- function(input, output) {
         INDICATOR_GREENAREA
       } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         INDICATOR_TRAILSLONGITUDE
-      } else {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_OPENSPACES) {
         INDICATOR_OPENSPACES
       }
     
@@ -507,7 +543,7 @@ server <- function(input, output) {
         PALETTE_GREENAREA_END_COLOR
       } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         PALETTE_TRAILSLONGITUDE_END_COLOR
-      } else {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_OPENSPACES) {
         PALETTE_OPENSPACES_END_COLOR
       }  
     
@@ -515,9 +551,11 @@ server <- function(input, output) {
     indicator_unit <-
       if (input$radiobuttons_indicators_recreation == INDICATOR_GREENAREA) {
         "m2"
-      } else {
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_TRAILSLONGITUDE) {
         "km"
-      }    
+      } else if (input$radiobuttons_indicators_recreation == INDICATOR_OPENSPACES) {
+        ""
+      }
     
     # Ggplot2 plot
     barplot_recreation_ggplot2 <-
@@ -558,6 +596,8 @@ server <- function(input, output) {
         COLUMN_CULTIVATEDLAND
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         COLUMN_CULTIVATEDPASTURES
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        COLUMN_SHADECOFFEE
       }
     
     # Label for bars
@@ -566,6 +606,8 @@ server <- function(input, output) {
         INDICATOR_CULTIVATEDLAND
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         INDICATOR_CULTIVATEDPASTURES
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        INDICATOR_SHADECOFFEE
       }
     
     # Y axis label
@@ -574,6 +616,8 @@ server <- function(input, output) {
         INDICATOR_CULTIVATEDLAND
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         INDICATOR_CULTIVATEDPASTURES
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        INDICATOR_SHADECOFFEE
       }
     
     # Fill color of bars
@@ -582,7 +626,9 @@ server <- function(input, output) {
         PALETTE_CULTIVATEDLAND_END_COLOR
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         PALETTE_CULTIVATEDPASTURES_END_COLOR
-      }  
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        PALETTE_SHADECOFFEE_END_COLOR
+      }
     
     # Units of measurement of the indicator (NOT IN USE)
     indicator_unit <-
@@ -590,7 +636,9 @@ server <- function(input, output) {
         "ha"
       } else if (input$radiobuttons_indicators_food == INDICATOR_CULTIVATEDPASTURES) {
         "ha"
-      }    
+      } else if (input$radiobuttons_indicators_food == INDICATOR_SHADECOFFEE) {
+        "ha"
+      }
     
     # Ggplot2 plot
     barplot_recreation_ggplot2 <-
