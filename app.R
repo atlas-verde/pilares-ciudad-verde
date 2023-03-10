@@ -41,6 +41,7 @@ cantons <- st_read(dsn = DSN_CANTONS, quiet = TRUE)
 
 # Data columns
 COLUMN_CANTON_NAME <- cantons$canton
+COLUMN_CANTON_NAME_2 <- "canton"
 
 COLUMN_GREENAREA <- cantons$supverd.ha
 COLUMN_TRAILSLONGITUDE <- cantons$km_sendero
@@ -170,83 +171,105 @@ PALETTE_ANNUALCROPS <- colorBin(
 
 # USER INTERFACE
 ui <-
-  fluidPage(
+  fluidPage(theme = "bootstrap",
     tags$head(
       tags$style(
         HTML(
-          "/* Radio buttons size */
+          '/* Radio buttons size */
           #radiobuttons_indicators_recreation label {
             font-size: 18px;
           }
           #radiobuttons_indicators_food label {
             font-size: 18px;
-          }"
+          }
+          .texto_agradecimiento_logos {
+            text-align: center;
+          }'
         )
       )
     ),    
-    navbarPage("Pilares Ciudad Verde", theme = shinytheme("lumen"),
+    navbarPage(title = "Pilares Ciudad Verde", 
+               theme = shinytheme("lumen"), 
+
+               # Pilar Ciudad verde: Salud y bienestar
+               navbarMenu("Salud y bienestar", icon = icon("globe-americas"),
+                          
+                          # Dimensión: Recreación - Servicio ecosistémico: Cultural
+                          tabPanel("Recreación", fluid = TRUE, icon = icon("globe-americas"),
+                                   sidebarLayout(
+                                     sidebarPanel(
+                                       fluidRow(h1(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
+                                       fluidRow(h2(strong("Dimensión"), br(), "Recreación")),
+                                       fluidRow(h3(strong("Meta aspiracional"), br(), em("La ciudad brinda a sus habitantes espacios verdes públicos y de calidad, para la recreación y la salud mental."))),
+                                       fluidRow(h3(strong("Servicio ecosistémico"), br(), "Cultural")),
+                                       fluidRow(h3(strong("Indicadores"))),
+                                       fluidRow(
+                                         radioButtons("radiobuttons_indicators_recreation",
+                                                      label = "",
+                                                      choices = c(
+                                                        INDICATOR_GREENAREA,
+                                                        INDICATOR_TRAILSLONGITUDE,
+                                                        INDICATOR_OPENSPACES
+                                                      ),
+                                                      selected = INDICATOR_GREENAREA
+                                         )
+                                       )
+                                     ),
+                                     mainPanel(
+                                       fluidRow(h3(strong(textOutput("header_recreation")))),
+                                       fluidRow(withSpinner(leafletOutput("map_recreation"))),
+                                       fluidRow(withSpinner(plotlyOutput("barplot_recreation")))
+                                     )
+                                   )
+                          ),
+                          
+                          # Dimensión: Alimento para la población - Servicio ecosistémico: Aprovisionamiento
+                          tabPanel("Alimento para la población", fluid = TRUE, icon = icon("globe-americas"),
+                                   sidebarPanel(
+                                     fluidRow(h1(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
+                                     fluidRow(h2(strong("Dimensión"), br(), "Alimento para la población")),
+                                     fluidRow(h3(strong("Meta aspiracional"), br(), em("La ciudad ofrece alimentos frescos, orgánicos de producción sostenible y local a la población."))),
+                                     fluidRow(h3(strong("Servicio ecosistémico"), br(), "Aprovisionamiento")),  
+                                     fluidRow(h3(strong("Indicadores"))),
+                                     fluidRow(
+                                       radioButtons("radiobuttons_indicators_food",
+                                                    label = "",
+                                                    choices = c(
+                                                      INDICATOR_CULTIVATEDLAND,
+                                                      INDICATOR_CULTIVATEDPASTURES,
+                                                      INDICATOR_SHADECOFFEE,
+                                                      INDICATOR_PERMANENTCROPS,
+                                                      INDICATOR_ANNUALCROPS
+                                                    ),
+                                                    selected = INDICATOR_CULTIVATEDLAND
+                                       )
+                                     )            
+                                   ),
+                                   mainPanel(
+                                     fluidRow(h3(strong(textOutput("header_food")))),
+                                     fluidRow(withSpinner(leafletOutput("map_food"))),
+                                     fluidRow(withSpinner(plotlyOutput("barplot_food")))
+                                   )
+                          )
+               ),
+               h3(class = "texto_agradecimiento_logos", strong("Este proyecto es posible gracias a")),
+               fluidRow(h1(column(width = 12))),
+               fluidRow(
+                 column(width = 4, img(src = "logo-gcr20222026.png", height = 90)),
+                 column(width = 4, img(src = "logo-minae.png", height = 90)),
+                 column(width = 4, img(src = "logo-sinac.jpg", height = 90)),
+                 class = "text-center"
+               ),
+               fluidRow(h1(column(width = 12))),
+               fluidRow(
+                 column(width = 4, img(src = "logo-catie.jpeg", height = 90)),
+                 column(width = 4, img(src = "logo-giz.png", height = 90)),
+                 column(width = 4, img(src = "logo-minambientealemania-iki.png", height = 90)),
+                 class = "text-center"
+               ),
+               fluidRow(h1(column(width = 12))),
+               fluidRow(h1(column(width = 12)))
                
-      # Pilar Ciudad verde: Salud y bienestar
-      navbarMenu("Salud y bienestar", icon = icon("globe-americas"),
-                 
-        # Dimensión: Recreación - Servicio ecosistémico: Cultural
-        tabPanel("Recreación", fluid = TRUE, icon = icon("globe-americas"),
-          sidebarLayout(
-            sidebarPanel(
-              fluidRow(h1(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
-              fluidRow(h2(strong("Dimensión"), br(), "Recreación")),
-              fluidRow(h3(strong("Meta aspiracional"), br(), em("La ciudad brinda a sus habitantes espacios verdes públicos y de calidad, para la recreación y la salud mental."))),
-              fluidRow(h3(strong("Servicio ecosistémico"), br(), "Cultural")),
-              fluidRow(h3(strong("Indicadores"))),
-              fluidRow(
-                radioButtons("radiobuttons_indicators_recreation",
-                  label = "",
-                  choices = c(
-                    INDICATOR_GREENAREA,
-                    INDICATOR_TRAILSLONGITUDE,
-                    INDICATOR_OPENSPACES
-                  ),
-                  selected = INDICATOR_GREENAREA
-                )
-              )
-            ),
-            mainPanel(
-              fluidRow(h3(strong(textOutput("header_recreation")))),
-              fluidRow(withSpinner(leafletOutput("map_recreation"))),
-              fluidRow(withSpinner(plotlyOutput("barplot_recreation")))
-            )
-          )
-        ),
-        
-        # Dimensión: Alimento para la población - Servicio ecosistémico: Aprovisionamiento
-        tabPanel("Alimento para la población", fluid = TRUE, icon = icon("globe-americas"),
-          sidebarPanel(
-            fluidRow(h1(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
-            fluidRow(h2(strong("Dimensión"), br(), "Alimento para la población")),
-            fluidRow(h3(strong("Meta aspiracional"), br(), em("La ciudad ofrece alimentos frescos, orgánicos de producción sostenible y local a la población."))),
-            fluidRow(h3(strong("Servicio ecosistémico"), br(), "Aprovisionamiento")),  
-            fluidRow(h3(strong("Indicadores"))),
-            fluidRow(
-              radioButtons("radiobuttons_indicators_food",
-                label = "",
-                choices = c(
-                  INDICATOR_CULTIVATEDLAND,
-                  INDICATOR_CULTIVATEDPASTURES,
-                  INDICATOR_SHADECOFFEE,
-                  INDICATOR_PERMANENTCROPS,
-                  INDICATOR_ANNUALCROPS
-                ),
-                selected = INDICATOR_CULTIVATEDLAND
-              )
-            )            
-          ),
-          mainPanel(
-            fluidRow(h3(strong(textOutput("header_food")))),
-            fluidRow(withSpinner(leafletOutput("map_food"))),
-            fluidRow(withSpinner(plotlyOutput("barplot_food")))
-          )
-        )
-      )
     )
   )
 
@@ -361,25 +384,25 @@ server <- function(input, output) {
       addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") |>   
       addProviderTiles(providers$Esri.WorldImagery, group = "ESRI World Imagery") |>
       addPolygons(data = cantons,
-        fillOpacity = ifelse(is.na(indicator_column), 0, 0.7),
-        stroke = TRUE,
-        color = "Black",
-        fillColor = indicator_fillColor,
-        weight = 1,
-        popup = paste(
-          paste("<strong>Cantón:</strong>",  COLUMN_CANTON_NAME),
-          paste(
-            paste0("<strong>", indicator_group, ":</strong>"), 
-            indicator_column
-          ),
-          sep = '<br/>'
-        ),
-        label = paste(
-          paste("Cantón:",  COLUMN_CANTON_NAME),
-          paste(paste0(indicator_group, ":"), indicator_column),
-          sep = ' - '
-        ),
-        group = indicator_group
+                  fillOpacity = ifelse(is.na(indicator_column), 0, 0.7),
+                  stroke = TRUE,
+                  color = "Black",
+                  fillColor = indicator_fillColor,
+                  weight = 1,
+                  popup = paste(
+                    paste("<strong>Cantón:</strong>",  cantons[[COLUMN_CANTON_NAME_2]]),
+                    paste(
+                      paste0("<strong>", indicator_group, ":</strong>"), 
+                      indicator_column
+                    ),
+                    sep = '<br/>'
+                  ),
+                  label = paste(
+                    paste("Cantón:",  cantons[[COLUMN_CANTON_NAME_2]]),
+                    paste(paste0(indicator_group, ":"), indicator_column),
+                    sep = ' - '
+                  ),
+                  group = indicator_group
       ) |>
       addLegend(
         position = "bottomright",
@@ -520,25 +543,25 @@ server <- function(input, output) {
       addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") |>   
       addProviderTiles(providers$Esri.WorldImagery, group = "ESRI World Imagery") |>
       addPolygons(data = cantons,
-        fillOpacity = ifelse(is.na(indicator_column), 0, 0.7),
-        stroke = TRUE,
-        color = "Black",
-        fillColor = indicator_fillColor,
-        weight = 1,
-        popup = paste(
-          paste("<strong>Cantón:</strong>",  COLUMN_CANTON_NAME),
-          paste(
-            paste0("<strong>", indicator_group, ":</strong>"), 
-            indicator_column
-          ),
-          sep = '<br/>'
-        ),
-        label = paste(
-          paste("Cantón:",  COLUMN_CANTON_NAME),
-          paste(paste0(indicator_group, ":"), indicator_column),
-          sep = ' - '
-        ),
-        group = indicator_group
+                  fillOpacity = ifelse(is.na(indicator_column), 0, 0.7),
+                  stroke = TRUE,
+                  color = "Black",
+                  fillColor = indicator_fillColor,
+                  weight = 1,
+                  popup = paste(
+                    paste("<strong>Cantón:</strong>",  {{COLUMN_CANTON_NAME_2}}),
+                    paste(
+                      paste0("<strong>", indicator_group, ":</strong>"), 
+                      indicator_column
+                    ),
+                    sep = '<br/>'
+                  ),
+                  label = paste(
+                    paste("Cantón:",  {{COLUMN_CANTON_NAME_2}}),
+                    paste(paste0(indicator_group, ":"), indicator_column),
+                    sep = ' - '
+                  ),
+                  group = indicator_group
       ) |>
       addLegend(
         position = "bottomright",
@@ -629,12 +652,12 @@ server <- function(input, output) {
     barplot_recreation_ggplot2 <-
       cantons |>
       ggplot(
-        aes(x = reorder(COLUMN_CANTON_NAME,-indicator_column), y = indicator_column)
+        aes(x = reorder(!!sym(COLUMN_CANTON_NAME_2),-indicator_column), y = indicator_column)
       ) +
       geom_col(
         aes(
           text = paste0(
-            "Cantón: ", COLUMN_CANTON_NAME, "\n", 
+            "Cantón: ", !!sym(COLUMN_CANTON_NAME_2), "\n",
             indicator_geom_col_label, ": ", indicator_column
           )
         ),
