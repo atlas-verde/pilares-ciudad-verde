@@ -378,10 +378,10 @@ server <- function(input, output) {
     
     # Map
     leaflet() |>
-      addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") |>
-      addProviderTiles(providers$CartoDB.DarkMatter, group = "CartoDB Dark Matter") |>
-      addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") |>   
-      addProviderTiles(providers$Esri.WorldImagery, group = "ESRI World Imagery") |>
+      addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Mapa de calles (OpenStreetMap)") |>
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "Mapa oscuro (CartoDB Dark Matter)") |>
+      addProviderTiles(providers$Stamen.TonerLite, group = "Mapa claro (Stamen Toner Lite)") |>   
+      addProviderTiles(providers$Esri.WorldImagery, group = "Imágenes satelitales (ESRI World Imagery)") |>
       addPolygons(data = cantons,
                   fillOpacity = ifelse(is.na(indicator_column), 0, 0.7),
                   stroke = TRUE,
@@ -415,10 +415,10 @@ server <- function(input, output) {
       ) |>
       addLayersControl(
         baseGroups = c(
-          "OpenStreetMap",
-          "CartoDB Dark Matter",
-          "Stamen Toner Lite",
-          "ESRI World Imagery"
+          "Mapa de calles (OpenStreetMap)",
+          "Mapa oscuro (CartoDB Dark Matter)",
+          "Mapa claro (Stamen Toner Lite)",
+          "Imágenes satelitales (ESRI World Imagery)"
         ),
         overlayGroups = c(indicator_group),
         options = layersControlOptions(collapsed = FALSE)
@@ -537,10 +537,10 @@ server <- function(input, output) {
     
     # Map
     leaflet() |>
-      addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") |>
-      addProviderTiles(providers$CartoDB.DarkMatter, group = "CartoDB Dark Matter") |>
-      addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") |>   
-      addProviderTiles(providers$Esri.WorldImagery, group = "ESRI World Imagery") |>
+      addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Mapa de calles (OpenStreetMap)") |>
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "Mapa oscuro (CartoDB Dark Matter)") |>
+      addProviderTiles(providers$Stamen.TonerLite, group = "Mapa claro (Stamen Toner Lite)") |>   
+      addProviderTiles(providers$Esri.WorldImagery, group = "Imágenes satelitales (ESRI World Imagery)") |>
       addPolygons(data = cantons,
                   fillOpacity = ifelse(is.na(indicator_column), 0, 0.7),
                   stroke = TRUE,
@@ -574,10 +574,10 @@ server <- function(input, output) {
       ) |>
       addLayersControl(
         baseGroups = c(
-          "OpenStreetMap",
-          "CartoDB Dark Matter",
-          "Stamen Toner Lite",
-          "ESRI World Imagery"
+          "Mapa de calles (OpenStreetMap)",
+          "Mapa oscuro (CartoDB Dark Matter)",
+          "Mapa claro (Stamen Toner Lite)",
+          "Imágenes satelitales (ESRI World Imagery)"
         ),
         overlayGroups = c(indicator_group),
         options = layersControlOptions(collapsed = FALSE)
