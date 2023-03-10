@@ -22,10 +22,10 @@ library(colorspace)
 get_quartiles_labels <- function(x) {
   # Returns a vector with the labels of the quartiles ranges
   
-  r1 <- paste0(as.character(x[1]), " - ", as.character(x[2]))
-  r2 <- paste0(as.character(x[2]), " - ", as.character(x[3]))  
-  r3 <- paste0(as.character(x[3]), " - ", as.character(x[4]))  
-  r4 <- paste0(as.character(x[4]), " - ", as.character(x[5]))  
+  r1 <- paste0(as.character(round(x[1], 1)), " - ", as.character(round(x[2], 1)))
+  r2 <- paste0(as.character(round(x[2], 1)), " - ", as.character(round(x[3], 1)))  
+  r3 <- paste0(as.character(round(x[3], 1)), " - ", as.character(round(x[4], 1)))  
+  r4 <- paste0(as.character(round(x[4], 1)), " - ", as.character(round(x[5], 1)))  
   
   return(c(r1, r2, r3, r4))
 }
@@ -198,11 +198,11 @@ ui <-
                           tabPanel("Recreación", fluid = TRUE, icon = icon("globe-americas"),
                                    sidebarLayout(
                                      sidebarPanel(
-                                       fluidRow(h1(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
-                                       fluidRow(h2(strong("Dimensión"), br(), "Recreación")),
-                                       fluidRow(h3(strong("Meta aspiracional"), br(), em("La ciudad brinda a sus habitantes espacios verdes públicos y de calidad, para la recreación y la salud mental."))),
-                                       fluidRow(h3(strong("Servicio ecosistémico"), br(), "Cultural")),
-                                       fluidRow(h3(strong("Indicadores"))),
+                                       fluidRow(h2(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
+                                       fluidRow(h3(strong("Dimensión"), br(), "Recreación")),
+                                       fluidRow(h4(strong("Meta aspiracional"), br(), em("La ciudad brinda a sus habitantes espacios verdes públicos y de calidad, para la recreación y la salud mental."))),
+                                       fluidRow(h4(strong("Servicio ecosistémico"), br(), "Cultural")),
+                                       fluidRow(h4(strong("Indicadores"))),
                                        fluidRow(
                                          radioButtons("radiobuttons_indicators_recreation",
                                                       label = "",
@@ -216,7 +216,7 @@ ui <-
                                        )
                                      ),
                                      mainPanel(
-                                       fluidRow(h3(strong(textOutput("header_recreation")))),
+                                       fluidRow(h4(strong(textOutput("header_recreation")))),
                                        fluidRow(withSpinner(leafletOutput("map_recreation"))),
                                        fluidRow(withSpinner(plotlyOutput("barplot_recreation")))
                                      )
@@ -226,11 +226,11 @@ ui <-
                           # Dimensión: Alimento para la población - Servicio ecosistémico: Aprovisionamiento
                           tabPanel("Alimento para la población", fluid = TRUE, icon = icon("globe-americas"),
                                    sidebarPanel(
-                                     fluidRow(h1(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
-                                     fluidRow(h2(strong("Dimensión"), br(), "Alimento para la población")),
-                                     fluidRow(h3(strong("Meta aspiracional"), br(), em("La ciudad ofrece alimentos frescos, orgánicos de producción sostenible y local a la población."))),
-                                     fluidRow(h3(strong("Servicio ecosistémico"), br(), "Aprovisionamiento")),  
-                                     fluidRow(h3(strong("Indicadores"))),
+                                     fluidRow(h2(strong("Pilar Ciudad Verde"), br(), "Salud y bienestar")),
+                                     fluidRow(h3(strong("Dimensión"), br(), "Alimento para la población")),
+                                     fluidRow(h4(strong("Meta aspiracional"), br(), em("La ciudad ofrece alimentos frescos, orgánicos de producción sostenible y local a la población."))),
+                                     fluidRow(h4(strong("Servicio ecosistémico"), br(), "Aprovisionamiento")),  
+                                     fluidRow(h4(strong("Indicadores"))),
                                      fluidRow(
                                        radioButtons("radiobuttons_indicators_food",
                                                     label = "",
@@ -246,7 +246,7 @@ ui <-
                                      )            
                                    ),
                                    mainPanel(
-                                     fluidRow(h3(strong(textOutput("header_food")))),
+                                     fluidRow(h4(strong(textOutput("header_food")))),
                                      fluidRow(withSpinner(leafletOutput("map_food"))),
                                      fluidRow(withSpinner(plotlyOutput("barplot_food")))
                                    )
@@ -269,7 +269,6 @@ ui <-
                ),
                fluidRow(h1(column(width = 12))),
                fluidRow(h1(column(width = 12)))
-               
     )
   )
 
